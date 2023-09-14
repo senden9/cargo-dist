@@ -240,6 +240,21 @@ pub enum DistError {
         /// Name of the msi
         style: String,
     },
+    /// Linkage report can't be run for this combination of OS and target
+    #[error("unable to run linkage report for {target} on {host}")]
+    LinkageCheckInvalidOS {
+        /// The OS the check was run on
+        host: String,
+        /// The OS being checked
+        target: String,
+    },
+    /// Linkage report can't be run for this target
+    #[error("unable to run linkage report for this type of binary")]
+    LinkageCheckUnsupportedBinary {},
+
+    /// random i/o error
+    #[error(transparent)]
+    Goblin(#[from] goblin::error::Error),
 }
 
 impl From<minijinja::Error> for DistError {

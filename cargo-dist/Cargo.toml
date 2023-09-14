@@ -53,6 +53,8 @@ include_dir = "0.7.3"
 itertools = "0.11.0"
 cargo-wix = "0.3.7"
 uuid = { version = "1", features = ["v4"] }
+mach_object = "0.1"
+goblin = "0.7.1"
 
 [dev-dependencies]
 insta = { version = "1.26.0", features = ["filters"] }

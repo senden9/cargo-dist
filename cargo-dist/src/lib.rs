@@ -12,6 +12,8 @@
 
 use std::{
     collections::{BTreeMap, HashMap},
+    fs::File,
+    io::{Cursor, Read},
     process::Command,
 };
 
@@ -26,7 +28,10 @@ use cargo_dist_schema::{Asset, AssetKind, DistManifest, ExecutableAsset};
 use config::{
     ArtifactMode, ChecksumStyle, CompressionImpl, Config, DirtyMode, GenerateMode, ZipStyle,
 };
+use goblin::Object;
+use mach_object::{LoadCommand, OFile};
 use semver::Version;
+use serde::Serialize;
 use tracing::{info, warn};
 
 use errors::*;
@@ -621,6 +626,15 @@ pub struct GenerateArgs {
     pub modes: Vec<GenerateMode>,
 }
 
+/// Arguments for `cargo dist linkage` ([`do_linkage][])
+#[derive(Debug)]
+pub struct LinkageArgs {
+    /// Print human-readable output
+    pub print_output: bool,
+    /// Print output as JSON
+    pub print_json: bool,
+}
+
 fn do_generate_preflight_checks(dist: &DistGraph) -> Result<()> {
     // Enforce cargo-dist-version, unless...
     //
@@ -711,6 +725,221 @@ pub fn run_generate(dist: &DistGraph, args: &GenerateArgs) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Determinage dynamic linkage of built artifacts (impl of `cargo dist linkage`)
+pub fn do_linkage(cfg: &Config, args: &LinkageArgs) -> Result<()> {
+    let dist = gather_work(cfg)?;
+
+    let mut reports = vec![];
+
+    for target in cfg.targets.clone() {
+        let artifacts: Vec<Artifact> = dist
+            .artifacts
+            .clone()
+            .into_iter()
+            .filter(|r| r.target_triples.contains(&target))
+            .collect();
+
+        if artifacts.is_empty() {
+            eprintln!("No matching artifact for target {target}");
+            continue;
+        }
+
+        for artifact in artifacts {
+            let path = Utf8PathBuf::from(&dist.dist_dir).join(format!("{}-{target}", artifact.id));
+
+            for (_, binary) in artifact.required_binaries {
+                let bin_path = path.join(binary);
+                if !bin_path.exists() {
+                    eprintln!("Binary {bin_path} missing; skipping check");
+                } else {
+                    reports.push(determine_linkage(&bin_path, &target)?);
+                }
+            }
+        }
+    }
+
+    if args.print_output {
+        for report in &reports {
+            eprintln!("{}", report.report());
+        }
+    }
+    if args.print_json {
+        let j = serde_json::to_string(&reports).unwrap();
+        println!("{}", j);
+    }
+
+    Ok(())
+}
+
+/// Information about dynamic libraries used by a binary
+#[derive(Debug, Serialize)]
+pub struct Linkage {
+    /// The filename of the binary
+    pub binary: String,
+    /// The target triple for which the binary was built
+    pub target: String,
+    /// Libraries included with the operating system
+    pub system: Vec<String>,
+    /// Libraries provided by the Homebrew package manager
+    pub homebrew: Vec<String>,
+    /// Public libraries not provided by the system and not managed by any package manager
+    pub public_unmanaged: Vec<String>,
+    /// Libraries which don't fall into any other categories
+    pub other: Vec<String>,
+    /// Frameworks, only used on macOS
+    pub frameworks: Vec<String>,
+}
+
+impl Linkage {
+    /// Formatted human-readable output
+    pub fn report(&self) -> String {
+        let s = format!(
+            r#"{} ({}):
+
+System: {}
+Homebrew: {}
+Public (unmanaged): {}
+Frameworks: {}
+Other: {}"#,
+            self.binary,
+            self.target,
+            self.system.join(" "),
+            self.homebrew.join(" "),
+            self.public_unmanaged.join(" "),
+            self.frameworks.join(" "),
+            self.other.join(" "),
+        );
+
+        s.to_owned()
+    }
+}
+
+fn do_otool(path: &Utf8PathBuf) -> DistResult<Vec<String>> {
+    let mut libraries = vec![];
+
+    let mut f = File::open(path)?;
+    let mut buf = vec![];
+    let size = f.read_to_end(&mut buf).unwrap();
+    let mut cur = Cursor::new(&buf[..size]);
+    if let OFile::MachFile {
+        header: _,
+        commands,
+    } = OFile::parse(&mut cur).unwrap()
+    {
+        let commands = commands
+            .iter()
+            .map(|load| load.command())
+            .cloned()
+            .collect::<Vec<LoadCommand>>();
+
+        for command in commands {
+            match command {
+                LoadCommand::IdDyLib(ref dylib)
+                | LoadCommand::LoadDyLib(ref dylib)
+                | LoadCommand::LoadWeakDyLib(ref dylib)
+                | LoadCommand::ReexportDyLib(ref dylib)
+                | LoadCommand::LoadUpwardDylib(ref dylib)
+                | LoadCommand::LazyLoadDylib(ref dylib) => {
+                    libraries.push(dylib.name.to_string());
+                }
+                _ => {}
+            }
+        }
+    }
+
+    Ok(libraries)
+}
+
+fn do_ldd(path: &Utf8PathBuf) -> DistResult<Vec<String>> {
+    let mut libraries = vec![];
+
+    let output = Command::new("ldd")
+        .arg(path)
+        .output()
+        .expect("Unable to run ldd");
+
+    let result = String::from_utf8_lossy(&output.stdout).to_string();
+    let lines = result.trim_end().split('\n');
+
+    for line in lines {
+        let line = line.trim();
+        // Not a library that actually concerns us
+        if line.starts_with("linux-vdso") {
+            continue;
+        }
+
+        // Format: libname.so.1 => /path/to/libname.so.1 (address)
+        if let Some(path) = line.split("=>").nth(1) {
+            libraries.push((path.split(' ').next().unwrap()).to_owned());
+        } else {
+            continue;
+        }
+    }
+
+    Ok(libraries)
+}
+
+fn do_pe(path: &Utf8PathBuf) -> DistResult<Vec<String>> {
+    let buf = std::fs::read(path)?;
+    match Object::parse(&buf)? {
+        Object::PE(pe) => Ok(pe.libraries.into_iter().map(|s| s.to_owned()).collect()),
+        _ => Err(DistError::LinkageCheckUnsupportedBinary {}),
+    }
+}
+
+fn determine_linkage(path: &Utf8PathBuf, target: &str) -> DistResult<Linkage> {
+    let libraries = match target {
+        // Can be run on any OS
+        "i686-apple-darwin" | "x86_64-apple-darwin" | "aarch64-apple-darwin" => do_otool(path)?,
+        "i686-unknown-linux-gnu" | "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" => {
+            // Currently can only be run on Linux
+            if std::env::consts::OS != "linux" {
+                return Err(DistError::LinkageCheckInvalidOS {
+                    host: std::env::consts::OS.to_owned(),
+                    target: target.to_owned(),
+                });
+            }
+            do_ldd(path)?
+        }
+        // Can be run on any OS
+        "i686-pc-windows-msvc" | "x86_64-pc-windows-msvc" | "aarch64-pc-windows-msvc" => {
+            do_pe(path)?
+        }
+        _ => return Err(DistError::LinkageCheckUnsupportedBinary {}),
+    };
+
+    let mut linkage = Linkage {
+        binary: path.file_name().unwrap().to_owned(),
+        target: target.to_owned(),
+        system: vec![],
+        homebrew: vec![],
+        public_unmanaged: vec![],
+        frameworks: vec![],
+        other: vec![],
+    };
+    for library in libraries {
+        if library.starts_with("/opt/homebrew") {
+            linkage.homebrew.push(library.clone());
+        } else if library.starts_with("/usr/lib") || library.starts_with("/lib") {
+            linkage.system.push(library.clone());
+        } else if library.starts_with("/System/Library/Frameworks")
+            || library.starts_with("/Library/Frameworks")
+        {
+            linkage.frameworks.push(library.clone());
+        } else if library.starts_with("/usr/local") {
+            if std::fs::canonicalize(&library)?.starts_with("/usr/local/Cellar") {
+                linkage.homebrew.push(library.clone());
+            } else {
+                linkage.public_unmanaged.push(library.clone());
+            }
+        } else {
+            linkage.other.push(library.clone());
+        }
+    }
+
+    Ok(linkage)
 }
 
 /// Run any necessary integrity checks for "primary" commands like build/plan

@@ -157,6 +157,15 @@ By default cargo-dist breaks build tasks onto more machines than strictly necess
 
 
 
+### Checking what your build linked against
+
+> since 0.4.0
+
+Although most Rust builds are statically linked and contain their own Rust dependencies, some crates will end up dynamically linking against system libraries. It's useful to know what your software picked up&mdash;sometimes this will help you catch things you may not have intended, like dynamically linking to OpenSSL, or allow you to check for package manager-provided libraries your users will need to have installed in order to be able to run your software.
+
+cargo-dist provides a linkage report during your CI build in order to allow you to check for this. For macOS and Linux, it's able to categorize the targets it linked against to help you gauge whether or not it's likely to cause problems for your users. To view this, check the detailed view of your CI build and consult the "Linkage report" step from the `upload-local artifacts` jobs.
+
+
 [config-fail-fast]: ../reference/config.md#fail-fast
 [config-merge-tasks]: ../reference/config.md#merge-tasks
 [config-allow-dirty]: ../reference/config.md#allow-dirty
