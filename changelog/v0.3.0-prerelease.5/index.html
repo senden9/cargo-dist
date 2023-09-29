@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" id="oranda" class="dark axo">
+    <head>
+        <title>cargo-dist</title>
+        
+        
+            <link rel="icon" href="/cargo-dist/favicon.ico" />
+        
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+            <meta name="description" content="Shippable application packaging for Rust" />
+            <meta property="og:description" content="Shippable application packaging for Rust" />
+        
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="cargo-dist" />
+        
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta property="og:image" content="https://www.axo.dev/meta_small.jpeg" />
+        
+        
+            <meta property="og:image:alt" content="axo" />
+        
+        
+            <meta name="twitter:creator" content="@axodotdev" />
+            <meta name="twitter:site" content="@axodotdev" />
+        
+        <meta http-equiv="Permissions-Policy" content="interest-cohort=()" />
+        <link rel="stylesheet" href="/cargo-dist/oranda-v0.4.1.css" />
+        
+        
+    </head>
+    <body>
+        <div class="container">
+            <div class="page-body">
+                
+                    <div class="repo_banner">
+                        <a href="https://github.com/axodotdev/cargo-dist">
+                            <div class="github-icon" aria-hidden="true"></div>
+                            Check out our GitHub!
+                        </a>
+                    </div>
+                
+
+                <main>
+                    <header>
+                        
+                        <h1 class="title">cargo-dist</h1>
+                        
+    <nav class="nav">
+        <ul>
+            <li><a href="/cargo-dist/">Home</a></li>
+
+            
+
+            
+                <li><a href="/cargo-dist/artifacts/">Install</a></li>
+            
+
+            
+                <li><a href="/cargo-dist/book/">Docs</a></li>
+            
+
+            
+
+            
+                <li><a href="/cargo-dist/changelog/">Changelog</a></li>
+            
+        </ul>
+    </nav>
+
+                    </header>
+
+                    
+<div>
+    <h1>Version 0.3.0-prerelease.5</h1>
+    <div class="releases-body">
+        
+        
+        <section class="release pre-release ">
+    
+    <div class="release-info">
+        <span class="flex items-center gap-2">
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'>
+    <path stroke-linecap='round' stroke-linejoin='round' d='M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z' />
+    <path stroke-linecap='round' stroke-linejoin='round' d='M6 6h.008v.008H6V6z' /></svg>
+            v0.3.0-prerelease.5
+        </span>
+        <span class="flex items-center gap-2">
+            
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'><path stroke-linecap='round' stroke-linejoin='round' d='M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5' /></svg>
+                Sep 12 2023 at 23:17 UTC
+            
+        </span>
+    </div>
+    <div class="release-body">
+        <p>This release is a big overhaul of cargo-dist's UX! <a href="https://opensource.axo.dev/cargo-dist/book/introduction.html#distributing" rel="noopener noreferrer">Our CI scripts have been completely redesigned</a> to allow your release process to be tested in pull-requests, so you don't have to worry as much about your release process breaking!</p>
+<p>Since we can now test your release process frequently, we've also made most cargo-dist commands default to erroring out if anything is out of sync and needs to be regenerated.</p>
+<p>To make this easier, we've also introduced an experimental new system for <a href="https://opensource.axo.dev/cargo-dist/book/ci/github.html#custom-jobs" rel="noopener noreferrer">user-defined hooks</a>, allowing you to write custom publish jobs without having to actually edit release.yml.</p>
+<p>This release also introduces initial support for msi installers with the wonderful help of <a href="https://github.com/volks73/cargo-wix" rel="noopener noreferrer">cargo-wix</a>!</p>
+<h2>Features</h2>
+<h3>CI redesign</h3>
+<p>This is the big ticket item of the release, the CI has been completely redesigned! We recommend reading the docs below for details, but some high-level details:</p>
+<ul>
+<li>
+<p>The CI now runs <code>cargo dist plan</code> on pull-requests</p>
+</li>
+<li>
+<p>This can be cranked up to <code>cargo dist build</code>, with results uploaded to the PR workflow, allowing you to download+test them</p>
+</li>
+<li>
+<p>To do this, we now use GitHub's upload-artifact/download-artifact system, instead of using a draft GitHub release as scratch storage</p>
+</li>
+<li>
+<p>This means we also no longer create a draft Release on startup, and instead transactionally create the full Release at the very end</p>
+</li>
+<li>
+<p><code>cargo dist plan</code> will now check that the CI script is up to date and not hand-edited (can be opted out)</p>
+<ul>
+<li>The user-defined publish jobs feature helps you avoid hand-edits</li>
+<li>More such features are in the pipeline for the next release!</li>
+</ul>
+</li>
+<li>
+<p>impl</p>
+<ul>
+<li>@mistydemeo + @gankra <a href="https://github.com/axodotdev/cargo-dist/pull/378" rel="noopener noreferrer">initial impl</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/392" rel="noopener noreferrer">cleanup init logic</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/442" rel="noopener noreferrer">use checkout@v4</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/443" rel="noopener noreferrer">add docs</a></li>
+</ul>
+</li>
+<li>
+<p>docs</p>
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/introduction.html#distributing" rel="noopener noreferrer">high-level summary</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/ci/github.html" rel="noopener noreferrer">detailed docs</a></li>
+</ul>
+</li>
+</ul>
+<h3>user-defined publish jobs</h3>
+<p>You can now define custom hand-written publish jobs that cargo-dist's CI will know how to invoke, without actually having to hand-edit release.yml!</p>
+<ul>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/417" rel="noopener noreferrer">impl</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/ci/github.html#custom-jobs" rel="noopener noreferrer">docs</a></li>
+</ul>
+<h3>default to not publishing prereleases to homebrew</h3>
+<p>Homebrew doesn't have a notion of package "versions", there is Only The Latest Version, so we changed the default to only publishing to your homebrew tap if you're cutting a stable release. You can opt back in to the old behaviour with <code>publish-prereleases = true</code>.</p>
+<ul>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/401" rel="noopener noreferrer">impl</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/reference/config.html#publish-prereleases" rel="noopener noreferrer">docs</a></li>
+</ul>
+<h3>generate command</h3>
+<p>This feature is a bit of an internal affair that you don't necessarily need to care about, but it's big enough that we figured it's worth mentioning.</p>
+<p>The "plumbing" <code>generate-ci</code> command which is invoked by <code>cargo dist init</code> has been reworked into a more general <code>generate</code> command, as the introduction of msi installers means we now have two kinds of checked-in generated output.</p>
+<p>Most notably, <code>generate --check</code> now exists, which produces an error if <code>generate</code> would change the contents (ignoring newline-style). <strong>Most cargo-dist commands now run <code>generate --check</code> on startup, making it an error to have your release.yml out of date or hand-edited</strong>. This is a key piece to the puzzle of the new CI design, as it lets you catch issues with your release process in PRs.</p>
+<p>The <code>allow-dirty = ["ci"]</code> config was introduced to disable these <code>generate</code> modifying or checking release.yml, for users that still really need to hand-edit. We're actively working on several features that should make it less necessary to do hand-edits.</p>
+<ul>
+<li>impl
+<ul>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/381" rel="noopener noreferrer">initial impl</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/391" rel="noopener noreferrer">generalize for msi</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/397" rel="noopener noreferrer">improved --allow-dirty behaviour</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/410" rel="noopener noreferrer">default to --artifacts=all in generate</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/414" rel="noopener noreferrer">ignore newline style when checking file equality</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/434" rel="noopener noreferrer">hide generate-ci alias command</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/444" rel="noopener noreferrer">cleanup more references to generate-ci</a></li>
+</ul>
+</li>
+<li>docs
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/reference/cli.html#cargo-dist-generate" rel="noopener noreferrer">generate cli command</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/reference/config.html#allow-dirty" rel="noopener noreferrer">allow-dirty config</a></li>
+</ul>
+</li>
+</ul>
+<h3>msi installer</h3>
+<p>Initial msi installer support is here, based on the wonderful <a href="https://volks73.github.io/cargo-wix/cargo_wix/" rel="noopener noreferrer">cargo-wix</a>. We contributed several upstream improvements to cargo-wix for our purposes, and look forward to helping out even more in the future!</p>
+<ul>
+<li>impl
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/370" rel="noopener noreferrer">initial impl</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/421" rel="noopener noreferrer">properly handle multiple subscribers to a binary</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/418" rel="noopener noreferrer">don't forward WiX output to stdout</a></li>
+</ul>
+</li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/installers/msi.html" rel="noopener noreferrer">docs</a></li>
+</ul>
+<h2>Fixes</h2>
+<h3>more useful checksum files</h3>
+<p>The checksum files we generate are now in the expected format for tools like sha256sum, making them more immediately useful.</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/420" rel="noopener noreferrer">impl</a></li>
+</ul>
+<h2>Maintenance</h2>
+<h3>more polished cli output</h3>
+<p>CLI Output has been streamlined and cleaned up a lot in this release!</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/411" rel="noopener noreferrer">remove redundant output</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/437" rel="noopener noreferrer">various improvements</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/447" rel="noopener noreferrer">better help diagnostics</a></li>
+</ul>
+<h3>refreshed docs</h3>
+<p>The docs have been significantly reworked to reflect how much cargo-dist has changed and improved over the last few releases. Installers have rapidly grown from "something we're trying out" to "the star of the show", so they're now front-and-center with room for their own guides.</p>
+<p>This was a big undertaking, and not everything has been reworked yet. Further improvements will be done more incrementally.</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/451" rel="noopener noreferrer">big docs overhaul</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/404" rel="noopener noreferrer">don't suggest --profile in install instructions</a></li>
+<li>@tshepang <a href="https://github.com/axodotdev/cargo-dist/pull/386" rel="noopener noreferrer">make search more useful</a></li>
+<li>@tshepang <a href="https://github.com/axodotdev/cargo-dist/pull/388" rel="noopener noreferrer">remove stray char</a></li>
+</ul>
+
+    </div>
+</section>
+    </div>
+</div>
+
+                </main>
+            </div>
+
+            <footer>
+                
+                    <a href="https://github.com/axodotdev/cargo-dist"><div class="github-icon" aria-hidden="true"></div></a>
+                
+                <span>
+                    cargo-dist, MIT OR Apache-2.0
+                </span>
+            </footer>
+        </div>
+
+        
+            <script defer="true" data-domain="opensource.axo.dev" src="https://plausible.io/js/script.js"></script>
+        
+        
+
+        
+    </body>
+</html>

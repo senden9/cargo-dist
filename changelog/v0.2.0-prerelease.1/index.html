@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" id="oranda" class="dark axo">
+    <head>
+        <title>cargo-dist</title>
+        
+        
+            <link rel="icon" href="/cargo-dist/favicon.ico" />
+        
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+            <meta name="description" content="Shippable application packaging for Rust" />
+            <meta property="og:description" content="Shippable application packaging for Rust" />
+        
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="cargo-dist" />
+        
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta property="og:image" content="https://www.axo.dev/meta_small.jpeg" />
+        
+        
+            <meta property="og:image:alt" content="axo" />
+        
+        
+            <meta name="twitter:creator" content="@axodotdev" />
+            <meta name="twitter:site" content="@axodotdev" />
+        
+        <meta http-equiv="Permissions-Policy" content="interest-cohort=()" />
+        <link rel="stylesheet" href="/cargo-dist/oranda-v0.4.1.css" />
+        
+        
+    </head>
+    <body>
+        <div class="container">
+            <div class="page-body">
+                
+                    <div class="repo_banner">
+                        <a href="https://github.com/axodotdev/cargo-dist">
+                            <div class="github-icon" aria-hidden="true"></div>
+                            Check out our GitHub!
+                        </a>
+                    </div>
+                
+
+                <main>
+                    <header>
+                        
+                        <h1 class="title">cargo-dist</h1>
+                        
+    <nav class="nav">
+        <ul>
+            <li><a href="/cargo-dist/">Home</a></li>
+
+            
+
+            
+                <li><a href="/cargo-dist/artifacts/">Install</a></li>
+            
+
+            
+                <li><a href="/cargo-dist/book/">Docs</a></li>
+            
+
+            
+
+            
+                <li><a href="/cargo-dist/changelog/">Changelog</a></li>
+            
+        </ul>
+    </nav>
+
+                    </header>
+
+                    
+<div>
+    <h1>Version 0.2.0-prerelease.1</h1>
+    <div class="releases-body">
+        
+        
+        <section class="release pre-release ">
+    
+    <div class="release-info">
+        <span class="flex items-center gap-2">
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'>
+    <path stroke-linecap='round' stroke-linejoin='round' d='M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z' />
+    <path stroke-linecap='round' stroke-linejoin='round' d='M6 6h.008v.008H6V6z' /></svg>
+            v0.2.0-prerelease.1
+        </span>
+        <span class="flex items-center gap-2">
+            
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'><path stroke-linecap='round' stroke-linejoin='round' d='M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5' /></svg>
+                Aug 17 2023 at 12:55 UTC
+            
+        </span>
+    </div>
+    <div class="release-body">
+        <p>This release includes a bunch of features that resolve several of our user's needs.</p>
+<ul>
+<li>Support for creating Homebrew packages on macOS and automatically uploading them to a private tap</li>
+<li>Ability to specify <code>--features</code> your application should be built with for production releases</li>
+<li>Ability to use more tag formats like <code>0.1.0</code>, <code>releases/v0.1.0</code>, <code>my-app/1.0.0</code>, etc.</li>
+<li>Ability to Bring Your Own Github Release (BYOGR) that cargo-dist uploads to</li>
+</ul>
+<p>In the background of these changes we've also been working on improving some of the architecture
+of cargo-dist to make it easier to add new installers and publishing steps.</p>
+<h2>Features</h2>
+<h3>Homebrew Formula Support</h3>
+<p>Generating a Homebrew formula can be enabled by adding <code>"homebrew"</code> to the list
+of installers in <code>Cargo.toml</code>. The formula file can be automatically uploaded
+to a tap to simplify <code>brew install</code>.</p>
+<p>This also introduces the first hint of the publish-jobs config, which will quickly
+grow support for automatically publishing to crates.io, npm, and more!</p>
+<ul>
+<li>impl
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/333" rel="noopener noreferrer">split out global task and have it fetch local results</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/336" rel="noopener noreferrer">properly pass --dir to gh release download</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/318" rel="noopener noreferrer">Homebrew formula file</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/340" rel="noopener noreferrer">Pushing to Homebrew tap</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/359" rel="noopener noreferrer">Add publish-jobs config</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/348" rel="noopener noreferrer">Add explicit version tag</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/353" rel="noopener noreferrer">Fix Homebrew messages in init</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/341" rel="noopener noreferrer">Add Homebrew docs</a></li>
+</ul>
+</li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/installers.html#homebrew" rel="noopener noreferrer">docs</a></li>
+</ul>
+<h3>Feature Flags</h3>
+<p>You can now change which Cargo features cargo-dist builds your project with, by setting <code>features</code>, <code>all-features</code>, and <code>default-features</code> on <code>[package.metadata.dist]</code> (and <code>[workspace.metadata.dist]</code> but this is less likely to be what you want for non-trivial workspaces).</p>
+<p>This is useful for projects which choose to have the default features for their project set to something other than the "proper" shipping configuration. For instance if your main package is both a library and an application, and you prefer to keep the library as the default for people depending on it. If all the "app" functionality is hidden behind a feature called "cli", then <code>features = ["cli"]</code> in <code>[package.metadata.dist]</code> will do what you want.</p>
+<p>If you enable any of these features, we may automatically turn on <code>precise-builds</code> to satisfy the requirements.</p>
+<p>See the docs for all the details.</p>
+<ul>
+<li>@gankra + @Yatekii <a href="https://github.com/axodotdev/cargo-dist/pull/321" rel="noopener noreferrer">impl</a></li>
+<li>docs
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#features" rel="noopener noreferrer">features</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#all-features" rel="noopener noreferrer">all-features</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#default-features" rel="noopener noreferrer">default-features</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#precise-builds" rel="noopener noreferrer">precise-builds</a></li>
+</ul>
+</li>
+</ul>
+<h3>Tag Formats</h3>
+<p>cargo-dist's git tag parser has been made much more robust and permissive:</p>
+<ul>
+<li>You can now prefix release tags with anything preceding a '/'</li>
+<li>The 'v' prefix on a version is now optional</li>
+<li>You can now use package-name/v1.0.0 instead of package-name-v1.0.0</li>
+</ul>
+<p>Putting this all together, all of these formats are now allowed:</p>
+<ul>
+<li>unified (release everything with the given version)
+<ul>
+<li>v1.0.0</li>
+<li>1.0.0</li>
+<li>blah/blah/v1.0.0</li>
+<li>whatever/1.0.0</li>
+</ul>
+</li>
+<li>precise (release only this one package)
+<ul>
+<li>package-name-v1.0.0</li>
+<li>package-name-1.0.0</li>
+<li>package-name/v1.0.0</li>
+<li>package-name/1.0.0</li>
+<li>blah/blah/package-name/v1.0.0</li>
+<li>blah/blah/package-name/1.0.0</li>
+<li>blah/blah/package-name-v1.0.0</li>
+<li>blah/blah/package-name-1.0.0</li>
+</ul>
+</li>
+</ul>
+<p>And of course <code>-prerelease.1</code>-style suffixes can be added to any of those.</p>
+<p>Thanks to @Sharparam for all the great work on the implementation and docs for this!</p>
+<ul>
+<li>@Sharparam + @gankra <a href="https://github.com/axodotdev/cargo-dist/pull/346" rel="noopener noreferrer">impl</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/workspace-guide.html#announcement-tags" rel="noopener noreferrer">docs</a></li>
+</ul>
+<h3>Bring Your Own Github Release</h3>
+<p>A new <code>create-release</code> config has been added, which makes cargo-dist interoperate with things like
+<a href="https://github.com/release-drafter/release-drafter/" rel="noopener noreferrer">release drafter</a> which create a draft body/title
+for your Github Release.</p>
+<p>When you set <code>create-release = false</code> cargo-dist will assume a draft Github Release for the current git tag already exists with the title/body you want, and just upload artifacts to it. At the end of a successful publish it will undraft the Github Release.</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/367" rel="noopener noreferrer">impl</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#create-release" rel="noopener noreferrer">docs</a></li>
+</ul>
+<h3>Enhanced Release Description</h3>
+<p>The table of release artifacts has been improved and now resembles the version
+in oranda.</p>
+<ul>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/357" rel="noopener noreferrer">impl</a></li>
+</ul>
+<h2>Fixes</h2>
+<ul>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/342" rel="noopener noreferrer">Fix a typo in deprecated rustup update lines</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/363" rel="noopener noreferrer">Fixes handling of cargo --message-format</a></li>
+<li>@mistydemeo <a href="https://github.com/axodotdev/cargo-dist/pull/298" rel="noopener noreferrer">Fixes handling repository URLs that end in .git</a>.</li>
+</ul>
+<h2>Maintenance</h2>
+<p>Thanks to everyone who contributed docs and cleanups, the real MVPs!!!</p>
+<ul>
+<li>@Sharparam <a href="https://github.com/axodotdev/cargo-dist/pull/345" rel="noopener noreferrer">remove unreachable code in installer.sh</a></li>
+<li>@orhun <a href="https://github.com/axodotdev/cargo-dist/pull/326" rel="noopener noreferrer">update instructions for Arch Linux</a></li>
+<li>@tshepang <a href="https://github.com/axodotdev/cargo-dist/pull/375" rel="noopener noreferrer">various</a> <a href="https://github.com/axodotdev/cargo-dist/pull/328" rel="noopener noreferrer">fixes</a> <a href="https://github.com/axodotdev/cargo-dist/pull/330" rel="noopener noreferrer">throughout</a> <a href="https://github.com/axodotdev/cargo-dist/pull/331" rel="noopener noreferrer">the docs</a></li>
+</ul>
+
+    </div>
+</section>
+    </div>
+</div>
+
+                </main>
+            </div>
+
+            <footer>
+                
+                    <a href="https://github.com/axodotdev/cargo-dist"><div class="github-icon" aria-hidden="true"></div></a>
+                
+                <span>
+                    cargo-dist, MIT OR Apache-2.0
+                </span>
+            </footer>
+        </div>
+
+        
+            <script defer="true" data-domain="opensource.axo.dev" src="https://plausible.io/js/script.js"></script>
+        
+        
+
+        
+    </body>
+</html>

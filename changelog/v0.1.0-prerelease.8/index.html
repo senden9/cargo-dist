@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" id="oranda" class="dark axo">
+    <head>
+        <title>cargo-dist</title>
+        
+        
+            <link rel="icon" href="/cargo-dist/favicon.ico" />
+        
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+            <meta name="description" content="Shippable application packaging for Rust" />
+            <meta property="og:description" content="Shippable application packaging for Rust" />
+        
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="cargo-dist" />
+        
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta property="og:image" content="https://www.axo.dev/meta_small.jpeg" />
+        
+        
+            <meta property="og:image:alt" content="axo" />
+        
+        
+            <meta name="twitter:creator" content="@axodotdev" />
+            <meta name="twitter:site" content="@axodotdev" />
+        
+        <meta http-equiv="Permissions-Policy" content="interest-cohort=()" />
+        <link rel="stylesheet" href="/cargo-dist/oranda-v0.4.1.css" />
+        
+        
+    </head>
+    <body>
+        <div class="container">
+            <div class="page-body">
+                
+                    <div class="repo_banner">
+                        <a href="https://github.com/axodotdev/cargo-dist">
+                            <div class="github-icon" aria-hidden="true"></div>
+                            Check out our GitHub!
+                        </a>
+                    </div>
+                
+
+                <main>
+                    <header>
+                        
+                        <h1 class="title">cargo-dist</h1>
+                        
+    <nav class="nav">
+        <ul>
+            <li><a href="/cargo-dist/">Home</a></li>
+
+            
+
+            
+                <li><a href="/cargo-dist/artifacts/">Install</a></li>
+            
+
+            
+                <li><a href="/cargo-dist/book/">Docs</a></li>
+            
+
+            
+
+            
+                <li><a href="/cargo-dist/changelog/">Changelog</a></li>
+            
+        </ul>
+    </nav>
+
+                    </header>
+
+                    
+<div>
+    <h1>Version 0.1.0-prerelease.8</h1>
+    <div class="releases-body">
+        
+        
+        <section class="release pre-release ">
+    
+    <div class="release-info">
+        <span class="flex items-center gap-2">
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'>
+    <path stroke-linecap='round' stroke-linejoin='round' d='M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z' />
+    <path stroke-linecap='round' stroke-linejoin='round' d='M6 6h.008v.008H6V6z' /></svg>
+            v0.1.0-prerelease.8
+        </span>
+        <span class="flex items-center gap-2">
+            
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='w-6 h-6'><path stroke-linecap='round' stroke-linejoin='round' d='M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5' /></svg>
+                Aug  4 2023 at 15:04 UTC
+            
+        </span>
+    </div>
+    <div class="release-body">
+        <p>The standout features of this release are custom install paths ("install my app to <code>~/.my-app</code> and add that to PATH"), archive checksums (releases should now include <code>my-app.tar.xz.sha256</code>), and refined builds (builds are more fault-tolerant, lower latency, and you can opt out of building <code>--workspace</code>).</p>
+<p>To update your cargo-dist config and release.yml <a href="https://opensource.axo.dev/cargo-dist/" rel="noopener noreferrer">install cargo dist 0.1.0</a> and run <code>cargo dist init</code> (you should also remove rust-toolchain-version from your config, it's deprecated).</p>
+<p>The codebase also got some major cleanups to make it easier to contribute and iterate on installers. All templates are now migrated to jinja2 (as opposed to adhoc string replace), and we have integration tests that can validate that installers work as intended.</p>
+<h2>Features</h2>
+<h3>custom install paths</h3>
+<p>One of our most frequently requested features is here, custom install paths! (And also installers adding things to PATH!)</p>
+<p>When using cargo-dist's script installers (<code>shell</code> and <code>powershell</code>), we need to unpack the binaries to somewhere that will be useful for the user. By default cargo-dist will install to <code>$CARGO_HOME</code> (<code>~/.cargo/bin/</code>), because for our userbase (and many CI environments) that tends to be a user-local directory that's already on PATH (and yes we now properly check and respect <code>$CARGO_HOME</code>!).</p>
+<p>With this feature not only can you customize where binaries get installed to, but the installer scripts now also understand how to check if that directory is on PATH, and if not register it in the appropriate places (and tell the user how to refresh PATH).</p>
+<p>The new install-path config currently takes 3 possible formats (that we will surely expand with a lot more options very quickly):</p>
+<ul>
+<li>"CARGO_HOME": explicitly requests the default behaviour</li>
+<li>"~/.myapp/some/subdir": install to the given subdirectory of $HOME</li>
+<li>"$MY_ENV_VAR/some/subdir/" install to the given subdirectory of $MY_ENV_VAR</li>
+</ul>
+<p>(Note that <code>$HOME/some/subdir</code> is not equivalent to <code>~/some/subdir</code> for various reasons, just always use the latter and we'll take care of those details for you.)</p>
+<p>See the docs for finer details, caveats, and future plans.</p>
+<ul>
+<li>docs
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#install-path" rel="noopener noreferrer">install-path</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/installers.html#shell" rel="noopener noreferrer">shell installer</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/installers.html#powershell" rel="noopener noreferrer">powershell installer</a></li>
+</ul>
+</li>
+<li>impl
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/284" rel="noopener noreferrer">add install-path</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/293" rel="noopener noreferrer">teach scripts to edit PATH</a></li>
+</ul>
+</li>
+</ul>
+<h3>archive checksums</h3>
+<p>By default all archives will get a paired checksum file generated and uploaded to the release (default sha256). So for instance if you produce <code>my-app-x86_64-unknown-linux-gnu.tar.gz</code> then there will also be <code>my-app-x86_64-unknown-linux-gnu.tar.gz.sha256</code>. This can be configured with the new <code>checksum</code> config.</p>
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#checksum" rel="noopener noreferrer">docs</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/243" rel="noopener noreferrer">impl</a></li>
+</ul>
+<h3>refined builds</h3>
+<p>Several changes were made to the way we build your projects, and more knobs were added to the <code>[workspace.metadata.dist]</code> config to allow you to tune the build to suit your needs.</p>
+<p>By default we now:</p>
+<ul>
+<li>
+<p>Build all target platforms on separate machines/tasks, improving concurrency and fault-tolerance (<strong>GitHub Releases should now be twice as fast!</strong>). Previously we would attempt to merge tasks to reduce the number of machines, infamously making both x64 mac and arm64 mac share a machine, doubling the latency of releases. You can get the old behaviour by setting <code>merge-tasks = true</code>.</p>
+</li>
+<li>
+<p>Allow all build tasks to continue running, even if one of them fails (the GitHub Release will only be auto-undrafted if <em>all</em> builds pass). This allows you to salvage as much of a release as possible if only one of your target platforms has a broken build, potentially manually rerunning the task. You can get the old behaviour be setting <code>fail-fast = true</code>.</p>
+</li>
+<li>
+<p>Recursively checkout submodules when fetching your project to build (seems harmless if you don't need it, and makes us work with more projects).</p>
+</li>
+<li>
+<p>Do not try to set the toolchain in rustup when rust-toolchain-version isn't set (and that config is now deprecated, so you should unset it). Pinning of compiler toolchains is really common in major projects like Firefox with dedicated release engineers, but it's kinda overkill for smaller projects. On balance we think letting your release toolchain silently update over time as your infra updates is a better default for most projects (especially since Rust is really good at stability). Anyone who really wants toolchain pinning would be better served by using rust-toolchain.toml (so that integration tests and local dev also check the toolchain used for releases).</p>
+</li>
+</ul>
+<p>In addition, you can now set <code>precise-builds = true</code> if you don't want us to build your apps with <code>--workspace</code>. There's a lot of complicated factors involved here but basically the difference is in how feature selection works in Cargo when you have multiple packages sharing a workspace. <code>--workspace</code> gets you a maximal default, precise-builds gets you a minimal default. For most projects there won't be a difference.</p>
+<ul>
+<li>docs
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#precise-builds" rel="noopener noreferrer">precise-builds</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#merge-tasks" rel="noopener noreferrer">merge-tasks</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#fail-fast" rel="noopener noreferrer">fail-fast</a></li>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#rust-toolchain-version" rel="noopener noreferrer">rust-toolchain-version</a></li>
+</ul>
+</li>
+<li>impl
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/277" rel="noopener noreferrer">precise-builds + merge-tasks</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/276" rel="noopener noreferrer">fail-fast</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/248" rel="noopener noreferrer">recursively checkout submodules</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/275" rel="noopener noreferrer">deprecate rust-toolchain-version</a></li>
+</ul>
+</li>
+</ul>
+<h3>orchestration features</h3>
+<p>A few new CLI features were added to cargo-dist to enable more programmatic manipulation of it. These are mostly uninteresting to normal users, and exist to enable future axo.dev tools that build on top of cargo-dist.</p>
+<ul>
+<li><code>cargo dist init --with-json-config=path/to/config.json</code>
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/cli.html#--with-json-config-with_json_config" rel="noopener noreferrer">docs</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/279" rel="noopener noreferrer">impl</a></li>
+</ul>
+</li>
+<li>The dist-manifest-schema.json is now properly hosted in releases
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/schema.html" rel="noopener noreferrer">docs</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/280" rel="noopener noreferrer">impl</a></li>
+</ul>
+</li>
+</ul>
+<h3>changelog "Unreleased" section</h3>
+<p>When parsing your changelog, prereleases can now also match the special "Unreleased" heading,
+making it easier to keep a changelog for the upcoming release without committing to its version.</p>
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/simple-guide.html#release-notes" rel="noopener noreferrer">docs</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/250" rel="noopener noreferrer">impl</a></li>
+</ul>
+<h2>Fixes</h2>
+<h3>including directories</h3>
+<p>The <code>include</code> config will now work properly if you provide it a path to a directory
+(the functionality was stubbed out but never implemented).</p>
+<ul>
+<li><a href="https://opensource.axo.dev/cargo-dist/book/config.html#include" rel="noopener noreferrer">docs</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/295" rel="noopener noreferrer">impl</a></li>
+</ul>
+<h3>release.yml license</h3>
+<p>At the request of end users, we've added a small legal notice at the top of the generated github release.yml file to indicate that the contents of the file are permissibly licensed. This hopefully makes it easier for package distributors and employees at large companies w/legal review to confidently use cargo-dist!</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/310" rel="noopener noreferrer">impl</a></li>
+</ul>
+<h2>Maintenance</h2>
+<ul>
+<li>
+<p>codebase broken up into more files</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/294" rel="noopener noreferrer">impl</a></li>
+</ul>
+</li>
+<li>
+<p>more code pulled out to axoasset</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/295" rel="noopener noreferrer">impl</a></li>
+</ul>
+</li>
+<li>
+<p>migrated all generated files to jinja2 templates</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/297" rel="noopener noreferrer">impl</a></li>
+</ul>
+</li>
+<li>
+<p>added an integration test "gallery" of projects that use cargo-dist</p>
+<ul>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/292" rel="noopener noreferrer">initial impl</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/296" rel="noopener noreferrer">improvements</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/299" rel="noopener noreferrer">improvements</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/300" rel="noopener noreferrer">improvements</a></li>
+<li>@gankra <a href="https://github.com/axodotdev/cargo-dist/pull/302" rel="noopener noreferrer">improvements</a></li>
+</ul>
+</li>
+<li>
+<p>other great cleanups/fixes</p>
+<ul>
+<li>@striezel <a href="https://github.com/axodotdev/cargo-dist/pull/254" rel="noopener noreferrer">fix typos</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</section>
+    </div>
+</div>
+
+                </main>
+            </div>
+
+            <footer>
+                
+                    <a href="https://github.com/axodotdev/cargo-dist"><div class="github-icon" aria-hidden="true"></div></a>
+                
+                <span>
+                    cargo-dist, MIT OR Apache-2.0
+                </span>
+            </footer>
+        </div>
+
+        
+            <script defer="true" data-domain="opensource.axo.dev" src="https://plausible.io/js/script.js"></script>
+        
+        
+
+        
+    </body>
+</html>
